@@ -1,5 +1,6 @@
 # Import the library OpenCV
 import cv2
+import numpy as np
 
 cap = cv2.VideoCapture("/home/neosoft/Desktop/projects/automatic_object_annotation/edited_vdo/edited_vdo1.mp4")
 
@@ -16,7 +17,12 @@ while (cap.isOpened()):
     ret, frame = cap.read()
     # Convert image to image gray
     tmp = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    gray = 255 * (tmp < 128).astype(np.uint8)
+    gray_new = 255 * (gray < 128).astype(np.uint8)
 
+    coords = cv2.findNonZero(gray_new)
+    # Find all non-zero points (text)
+    x, y, w, h = cv2.boundingRect(coords)
 
     rows, cols = tmp.shape
 
@@ -41,9 +47,10 @@ while (cap.isOpened()):
     # Using cv2.merge() to merge rgba
     # into a coloured/multi-channeled image
     dst = cv2.merge(rgba, 4)
+    rect = dst[y:y + h, x:x + w]
 
     # Writing and saving to a new image
     # Saves the frames with frame-count
-    cv2.imwrite("/home/neosoft/Desktop/projects/automatic_object_annotation/tmp/frame%d.jpg" % count, alpha)
+    cv2.imwrite("/home/neosoft/Desktop/projects/automatic_object_annotation/output/frame%d.png" % count, rect)
 
     count += 1
