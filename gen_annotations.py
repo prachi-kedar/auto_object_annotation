@@ -1,8 +1,12 @@
 import os
 import random
-from tqdm import tqdm
 import cv2
-import concurrent.futures
+import config
+
+baground_imags = config.BAGROUND_IMG_DIRECTORY
+object_imgs = config.OBJECT_IMG_DIRECTORY
+no_of_objects = config.NO_OF_OBJECTS
+output_folder = config.OUTPUT_DIRECTORY
 
 
 def read_image(image_path):
@@ -12,33 +16,9 @@ def read_image(image_path):
         return cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
 
 
-def get_voc_xml(folder, filename, width, height, depth, objects):
-    string = open(os.path.dirname(os.path.realpath(__file__)) + "/voc.xml").read()
-
-    return string.format(
-        folder=folder,
-        filename=filename,
-        width=width,
-        height=height,
-        depth=depth,
-        objects=objects,
-        path=""
-    )
-
-
-def get_voc_object(name, xmin, ymin, xmax, ymax):
-    string = open(os.path.dirname(os.path.realpath(__file__)) + "/voc_object.xml").read()
-
-    return string.format(
-        name=name,
-        pose='unspecified',
-        truncated=0,
-        difficult=0,
-        xmin=xmin,
-        ymin=ymin,
-        xmax=xmax,
-        ymax=ymax
-    )
+def get_yolo_annotations(name, xmin, ymin, xmax, ymax):
+    annotation_string_ = ("{} {:.3f} {:.3f} {:.3f} {:.3f}".format(name, xmin, ymin, xmax, ymax))
+    return annotation_string_
 
 
 def overlay_image(background_image, object_image, loc_0, loc_1):
@@ -60,7 +40,7 @@ def overlay_image(background_image, object_image, loc_0, loc_1):
     return background_image
 
 
-def place_objects(image, background, objects_per_image, output, n):
+def place_objects(image, background, objects_per_image, output):
     bg_img_original = read_image(background)
     img = read_image(image)
     bg_shape = bg_img_original.shape
@@ -69,23 +49,21 @@ def place_objects(image, background, objects_per_image, output, n):
     dim_0_range = bg_shape[0] - img_shape[0]
     dim_1_range = bg_shape[1] - img_shape[1]
 
-    name = os.path.dirname(image).split("/")[-1]
-    folder = "name"
-    filename = os.path.basename(os.path.splitext(image)[0])
+    name = os.path.dirname(image).split('/')[-1]
 
     for repeat in objects_per_image:
         bg_img = bg_img_original.copy()
         object_vocs = []
-        filename_this = f"{filename}-{repeat}-{name}-{n}"
+
+        filename_this = f"{repeat}-{name}"
 
         for itr in range(repeat):
             loc_0 = random.choice(range(0, dim_0_range))
             loc_1 = random.choice(range(0, dim_1_range))
             bg_img = overlay_image(bg_img, img, loc_0, loc_1)
-            object_vocs.append(get_voc_object(name, loc_1, loc_0, loc_1 + img_shape[1], loc_0 + img_shape[0]))
+            object_vocs.append(get_yolo_annotations(name, loc_1, loc_0, loc_1 + img_shape[1], loc_0 + img_shape[0]))
 
         complete_voc_objects = "".join(object_vocs)
-        complete_voc = get_voc_xml(folder, filename_this, bg_shape[1], bg_shape[0], bg_shape[2], complete_voc_objects)
 
         # Directory
         annotation_directory = "annotations"
@@ -110,37 +88,9 @@ def place_objects(image, background, objects_per_image, output, n):
         if not isImgExist:
             os.mkdir(img_path)
 
-        with open(f"{output}/annotations/{filename_this}.xml", "w+") as fvoc:
-            fvoc.write(complete_voc)
+        with open(f"{output}/annotations/{filename_this}.txt", "w+") as fvoc:
+            fvoc.write(complete_voc_objects)
         cv2.imwrite(f"{output}/images/{filename_this}.jpg", bg_img)
 
 
-def generate_annotation_fixed_size(images, backgrounds, images_per_object, objects_per_image, random_seed, threads,
-                                   output):
-    executor = concurrent.futures.ThreadPoolExecutor(max_workers=threads)
-
-    if random_seed is not None:
-        random.seed(random_seed)
-
-    exec_args = []
-
-    for n, image in enumerate(images):
-        for itr in range(images_per_object):
-            # randomly pick a background
-            background = random.choice(backgrounds)
-            exec_args.append([image, background, objects_per_image, output, n])
-
-    for itr in tqdm(executor.map(
-            lambda p: place_objects('/home/neosoft/Desktop/projects/automatic_object_annotation/img',
-                                    '/home/neosoft/Desktop/projects/automatic_object_annotation/bag', range(4),
-                                    '/home/neosoft/Desktop/projects/automatic_object_annotation/out', 1), exec_args),
-            total=len(exec_args),
-            desc="Generating images."):
-        pass
-
-    executor.shutdown(wait=True)
-
-
-generate_annotation_fixed_size('/home/neosoft/Desktop/projects/automatic_object_annotation/img',
-                               '/home/neosoft/Desktop/projects/automatic_object_annotation/bag', 3, range(4), 1, 1,
-                               '/home/neosoft/Desktop/projects/automatic_object_annotation/out')
+place_objects(object_imgs, baground_imags, no_of_objects, output_folder)
