@@ -1,5 +1,5 @@
 # path of the baground images
-BAGROUND_IMG_DIRECTORY = '/home/neosoft/Desktop/projects/automatic_object_annotation/bag'
+BAGROUND_IMG_DIRECTORY = '/home/neosoft/Desktop/projects/automatic_object_annotation/bag/'
 
 # path of an object images
 OBJECT_IMG_DIRECTORY = '/home/neosoft/Desktop/projects/automatic_object_annotation/bottle/'
@@ -8,5 +8,5 @@ OBJECT_IMG_DIRECTORY = '/home/neosoft/Desktop/projects/automatic_object_annotati
 OUTPUT_DIRECTORY = '/home/neosoft/Desktop/projects/automatic_object_annotation/out'
 
 # no of objects per image
-NO_OF_OBJECTS = range(2)
+NO_OF_OBJECTS = range(1,3)
 

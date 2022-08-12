@@ -2,6 +2,7 @@ import os
 import random
 import cv2
 import config
+from tqdm import tqdm
 
 baground_imags = config.BAGROUND_IMG_DIRECTORY
 object_imgs = config.OBJECT_IMG_DIRECTORY
@@ -10,10 +11,14 @@ output_folder = config.OUTPUT_DIRECTORY
 
 
 def read_image(image_path):
+    images_list = []
+    image_name = []
     for file in os.listdir(image_path):
-        image_path = f"{image_path}/{file}"
+        image_path_ = f"{image_path}/{file}"
 
-        return cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+        images_list.append(cv2.imread(image_path_, cv2.IMREAD_UNCHANGED))
+        image_name.append(file)
+    return images_list, image_name
 
 
 def get_yolo_annotations(name, xmin, ymin, xmax, ymax):
@@ -41,56 +46,62 @@ def overlay_image(background_image, object_image, loc_0, loc_1):
 
 
 def place_objects(image, background, objects_per_image, output):
-    bg_img_original = read_image(background)
-    img = read_image(image)
-    bg_shape = bg_img_original.shape
-    img_shape = img.shape
+    bg_img_original, bg_name = read_image(background)
+    img, img_name = read_image(image)
+    combinations = len(img) * len(bg_img_original)
 
-    dim_0_range = bg_shape[0] - img_shape[0]
-    dim_1_range = bg_shape[1] - img_shape[1]
+    for b in tqdm(range(combinations), desc="Generating Annotations..."):
+        for i, j, k in zip(bg_img_original, img, bg_name):
+            k = k.split('.')[0]
+            bg_shape = i.shape
+            img_shape = j.shape
 
-    name = os.path.dirname(image).split('/')[-1]
+            dim_0_range = bg_shape[0] - img_shape[0]
+            dim_1_range = bg_shape[1] - img_shape[1]
 
-    for repeat in objects_per_image:
-        bg_img = bg_img_original.copy()
-        object_vocs = []
+            name = os.path.dirname(image).split('/')[-1]
 
-        filename_this = f"{repeat}-{name}"
+            for repeat in objects_per_image:
+                bg_img = i.copy()
+                object_vocs = []
 
-        for itr in range(repeat):
-            loc_0 = random.choice(range(0, dim_0_range))
-            loc_1 = random.choice(range(0, dim_1_range))
-            bg_img = overlay_image(bg_img, img, loc_0, loc_1)
-            object_vocs.append(get_yolo_annotations(name, loc_1, loc_0, loc_1 + img_shape[1], loc_0 + img_shape[0]))
+                filename_this = f"{repeat}-{name}-{k}"
 
-        complete_voc_objects = "".join(object_vocs)
+                for itr in range(repeat):
+                    loc_0 = random.choice(range(0, dim_0_range))
+                    loc_1 = random.choice(range(0, dim_1_range))
+                    bg_img = overlay_image(bg_img, j, loc_0, loc_1)
+                    object_vocs.append(
+                        get_yolo_annotations(name, loc_1, loc_0, loc_1 + img_shape[1], loc_0 + img_shape[0]))
 
-        # Directory
-        annotation_directory = "annotations"
+                complete_voc_objects = "".join(object_vocs)
 
-        img_directory = 'images'
+                # Directory
+                annotation_directory = "annotations"
 
-        # Parent Directory path
-        parent_dir = output
+                img_directory = 'images'
 
-        # Path
-        annotation_path = os.path.join(parent_dir, annotation_directory)
-        img_path = os.path.join(parent_dir, img_directory)
+                # Parent Directory path
+                parent_dir = output
 
-        # Create the directory
+                # Path
+                annotation_path = os.path.join(parent_dir, annotation_directory)
+                img_path = os.path.join(parent_dir, img_directory)
 
-        isAnnotaionsExist = os.path.exists(annotation_path)
-        isImgExist = os.path.exists(img_path)
+                # Create the directory
 
-        if not isAnnotaionsExist:
-            os.mkdir(annotation_path)
+                isAnnotaionsExist = os.path.exists(annotation_path)
+                isImgExist = os.path.exists(img_path)
 
-        if not isImgExist:
-            os.mkdir(img_path)
+                if not isAnnotaionsExist:
+                    os.mkdir(annotation_path)
 
-        with open(f"{output}/annotations/{filename_this}.txt", "w+") as fvoc:
-            fvoc.write(complete_voc_objects)
-        cv2.imwrite(f"{output}/images/{filename_this}.jpg", bg_img)
+                if not isImgExist:
+                    os.mkdir(img_path)
+
+                with open(f"{output}/annotations/{filename_this}.txt", "w+") as fvoc:
+                    fvoc.write(complete_voc_objects)
+                cv2.imwrite(f"{output}/images/{filename_this}.jpg", bg_img)
 
 
 place_objects(object_imgs, baground_imags, no_of_objects, output_folder)
