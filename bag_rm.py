@@ -1,7 +1,8 @@
-# Import the library OpenCV
+import os
 import cv2
 import numpy as np
 
+# path of video
 cap = cv2.VideoCapture("/home/neosoft/Desktop/projects/automatic_object_annotation/edited_vdo/edited_vdo1.mp4")
 
 # Used as counter variable
@@ -52,7 +53,22 @@ try:
 
         # Writing and saving to a new image
         # Saves the frames with frame-count
-        cv2.imwrite("/home/neosoft/Desktop/projects/automatic_object_annotation/output/frame%d.png" % count, rect)
+
+        # Parent Directory path
+        parent_dir = "/home/neosoft/Desktop/projects/automatic_object_annotation"
+
+        # directory name
+        directory = "output"
+
+        # Path
+        path = os.path.join(parent_dir, directory)
+        pathExist = os.path.exists(path)
+
+        # check if directory exists
+        if not pathExist:
+            os.mkdir(path)
+
+        cv2.imwrite("%s/frame%d.png" % (directory,count), rect)
 
         count += 1
 except Exception as e:

@@ -4,11 +4,6 @@ import cv2
 import config
 from tqdm import tqdm
 
-baground_imags = config.BAGROUND_IMG_DIRECTORY
-object_imgs = config.OBJECT_IMG_DIRECTORY
-no_of_objects = config.NO_OF_OBJECTS
-output_folder = config.OUTPUT_DIRECTORY
-
 
 def read_image(image_path):
     images_list = []
@@ -104,4 +99,4 @@ def place_objects(image, background, objects_per_image, output):
                 cv2.imwrite(f"{output}/images/{filename_this}.jpg", bg_img)
 
 
-place_objects(object_imgs, baground_imags, no_of_objects, output_folder)
+place_objects(config.OBJECT_IMG_DIRECTORY, config.BAGROUND_IMG_DIRECTORY, config.NO_OF_OBJECTS, config.OUTPUT_DIRECTORY)
