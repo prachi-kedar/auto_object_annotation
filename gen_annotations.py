@@ -69,7 +69,7 @@ def place_objects(image, background, objects_per_image, output):
                     object_vocs.append(
                         get_yolo_annotations(name, loc_1, loc_0, loc_1 + img_shape[1], loc_0 + img_shape[0]))
 
-                complete_voc_objects = "".join(object_vocs)
+                complete_voc_objects = '\n'.join(object_vocs)
 
                 # Directory
                 annotation_directory = "annotations"
