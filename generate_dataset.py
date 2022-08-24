@@ -1,8 +1,8 @@
 import os
 import shutil
 
-img_path = "img_annotations/images"
-labels_path = "img_annotations/annotations"
+img_path = "output/images"
+labels_path = "output/annotations"
 
 img_dir_list = os.listdir(img_path)
 label_dir_list = os.listdir(labels_path)
@@ -28,10 +28,10 @@ test_label = label_path[training_length:]
 train_dir_img = 'train/images'
 test_dir_img = 'test/images'
 
-train_dir_label = 'train/label'
-test_dir_label = 'test/label'
+train_dir_label = 'train/labels'
+test_dir_label = 'test/labels'
 
-new_path = 'img_annotations'
+new_path = 'dataset'
 # Path
 train_path_img = os.path.join(new_path, train_dir_img)
 test_path_img = os.path.join(new_path, test_dir_img)
@@ -59,14 +59,14 @@ if not istest_labelExist:
     os.makedirs(test_path_label)
 
 for i, j in zip(train_img, train_label):
-    img_dst_path = "img_annotations/train/images"
-    label_dst_path = "img_annotations/train/label"
+    img_dst_path = "dataset/train/images"
+    label_dst_path = "dataset/train/labels"
     shutil.move(i, img_dst_path)
     shutil.move(j, label_dst_path)
 
 for m, n in zip(test_img, test_label):
-    img_dst_path = "img_annotations/test/images"
-    label_dst_path = "img_annotations/test/label"
+    img_dst_path = "dataset/test/images"
+    label_dst_path = "dataset/test/labels"
     shutil.move(m, img_dst_path)
     shutil.move(n, label_dst_path)
 
@@ -87,6 +87,6 @@ list_.append(str('nc:'+' '+str(len(list_name))))
 list_.append(str('names:'+' '+str(list_name)))
 
 complete_voc_objects = '\n'.join(list_)
-with open('img_annotations/data.yml','w+') as f:
+with open('dataset/data.yaml','w+') as f:
     f.write(complete_voc_objects)
 
