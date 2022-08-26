@@ -18,7 +18,7 @@ def read_image(image_path):
 
         images_list.append(cv2.imread(image_path_, cv2.IMREAD_UNCHANGED))
         image_name.append(file)
-    return images_list, image_name, image_path_
+    return images_list, image_name, image_path
 
 
 def get_yolo_annotations(xmin, ymin, image_width, image_height, frame_width, frame_height):
@@ -94,7 +94,9 @@ def image_preprocessing(img):
                     [y, 1, 0],
                     [0, 0, 1]])
     rows, cols, dim = img.shape
+
     img = cv2.warpPerspective(img, M, (int(cols * 1.5), int(rows * 1.5)))
+
 
     return img
 
@@ -121,8 +123,7 @@ def overlay_image(background_image, object_image, loc_0, loc_1):
 def place_objects(image, background, objects_per_image,output):
     bg_img_original, bg_name, bg_path = read_image(background)
     img, img_name, img_path = read_image(image)
-    folder_name = img_path.split('/')[-3]
-
+    folder_name = img_path.split('/')[-1]
 
     for b in tqdm(range(len(img)), desc="Generating Annotations..."):
 
@@ -132,6 +133,8 @@ def place_objects(image, background, objects_per_image,output):
 
             bg_shape = i.shape
             img_shape = j.shape
+
+            print(bg_shape,img_shape)
             if bg_shape[0] > img_shape[0] and bg_shape[1] > img_shape[1]:
                 dim_0_range = bg_shape[0] - img_shape[0]
                 dim_1_range = bg_shape[1] - img_shape[1]
@@ -143,6 +146,7 @@ def place_objects(image, background, objects_per_image,output):
                     object_vocs = []
 
                     filename_this = f"{repeat}-{name}-{k}--{folder_name}"
+
 
                     for itr in range(repeat):
                         loc_0 = random.choice(range(0, dim_0_range))
@@ -179,6 +183,7 @@ def place_objects(image, background, objects_per_image,output):
                     with open(f"{output}/annotations/{filename_this}.txt", "w+") as fvoc:
                         fvoc.write(complete_voc_objects)
                     cv2.imwrite(f"{output}/images/{filename_this}.jpg", bg_img)
+
 
 
 place_objects(config.OBJECT_IMG_DIRECTORY, config.BAGROUND_IMG_DIRECTORY, config.NO_OF_OBJECTS, config.OUTPUT_DIRECTORY)
