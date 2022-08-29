@@ -9,4 +9,3 @@ OUTPUT_DIRECTORY = '/home/neosoft/Desktop/projects/automatic_object_annotation/o
 
 # no of objects per image
 NO_OF_OBJECTS = range(1,3)
-

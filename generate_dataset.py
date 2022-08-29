@@ -31,7 +31,7 @@ test_dir_img = 'test/images'
 train_dir_label = 'train/labels'
 test_dir_label = 'test/labels'
 
-new_path = 'dataset'
+new_path = 'new_dataset'
 # Path
 train_path_img = os.path.join(new_path, train_dir_img)
 test_path_img = os.path.join(new_path, test_dir_img)
@@ -59,14 +59,14 @@ if not istest_labelExist:
     os.makedirs(test_path_label)
 
 for i, j in zip(train_img, train_label):
-    img_dst_path = "dataset/train/images"
-    label_dst_path = "dataset/train/labels"
+    img_dst_path = "new_dataset/train/images"
+    label_dst_path = "new_dataset/train/labels"
     shutil.move(i, img_dst_path)
     shutil.move(j, label_dst_path)
 
 for m, n in zip(test_img, test_label):
-    img_dst_path = "dataset/test/images"
-    label_dst_path = "dataset/test/labels"
+    img_dst_path = "new_dataset/test/images"
+    label_dst_path = "new_dataset/test/labels"
     shutil.move(m, img_dst_path)
     shutil.move(n, label_dst_path)
 
@@ -87,6 +87,6 @@ list_.append(str('nc:'+' '+str(len(list_name))))
 list_.append(str('names:'+' '+str(list_name)))
 
 complete_voc_objects = '\n'.join(list_)
-with open('dataset/data.yaml','w+') as f:
+with open('new_dataset/data.yaml','w+') as f:
     f.write(complete_voc_objects)
 
