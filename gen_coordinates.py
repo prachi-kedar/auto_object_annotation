@@ -127,14 +127,14 @@ def place_objects(image, background, objects_per_image,output):
 
     for b in tqdm(range(len(img)), desc="Generating Annotations..."):
 
-        for i, k in zip(bg_img_original, bg_name):
-            j = image_preprocessing(img[b])
+        for i, k,f in zip(bg_img_original, bg_name,img):
+
             k = k.split('.')[0]
 
             bg_shape = i.shape
-            img_shape = j.shape
+            img_shape = f.shape
 
-            print(bg_shape,img_shape)
+
             if bg_shape[0] > img_shape[0] and bg_shape[1] > img_shape[1]:
                 dim_0_range = bg_shape[0] - img_shape[0]
                 dim_1_range = bg_shape[1] - img_shape[1]
@@ -149,6 +149,7 @@ def place_objects(image, background, objects_per_image,output):
 
 
                     for itr in range(repeat):
+                        j = image_preprocessing(img[b])
                         loc_0 = random.choice(range(0, dim_0_range))
                         loc_1 = random.choice(range(0, dim_1_range))
                         bg_img = overlay_image(bg_img, j, loc_0, loc_1)
